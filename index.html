@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpotifyPod</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .ipod-container {
+            width: 320px;
+            height: 580px;
+            background: linear-gradient(145deg, #f0f0f0, #ffffff);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .screen {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(145deg, #a8d5e2, #c8e6f5);
+            border: 3px solid #333;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            background: #c8e6f5;
+            color: #000;
+            padding: 12px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .menu-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-item.selected {
+            background: rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        .menu-item:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .now-playing {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .album-art {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 10px;
+            background: #999;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .track-info {
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .track-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #999;
+            border-radius: 2px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #333;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .controls {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .click-wheel {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #e0e0e0, #ffffff);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .wheel-outer {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .wheel-button {
+            position: absolute;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #333;
+            user-select: none;
+        }
+
+        .wheel-button:active {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .btn-menu {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 30px;
+            border-radius: 15px;
+        }
+
+        .btn-prev {
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 60px;
+            border-radius: 15px;
+        }
+
+        .btn-next {
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 60px;
+            border-radius: 15px;
+        }
+
+        .btn-play {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 30px;
+            border-radius: 15px;
+        }
+
+        .center-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .center-button:active {
+            background: linear-gradient(145deg, #e0e0e0, #d0d0d0);
+        }
+
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .login-btn {
+            background: #1DB954;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .login-btn:hover {
+            background: #1ed760;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error {
+            color: #c00;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .small-text {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="ipod-container">
+        <div class="screen">
+            <div class="screen-content" id="screenContent">
+                <div class="login-screen">
+                    <h2>SpotifyPod</h2>
+                    <p class="small-text">Connect your Spotify account to start</p>
+                    <button class="login-btn" onclick="loginSpotify()">Login with Spotify</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="click-wheel">
+                <div class="wheel-outer">
+                    <div class="wheel-button btn-menu" onclick="handleMenu()">MENU</div>
+                    <div class="wheel-button btn-prev" onclick="handlePrev()">⏮</div>
+                    <div class="wheel-button btn-next" onclick="handleNext()">⏭</div>
+                    <div class="wheel-button btn-play" onclick="handlePlay()">⏯</div>
+                    <div class="center-button" onclick="handleSelect()">SELECT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CLIENT_ID = '9925addf4f6e429eb8c97c6825c4f14c';
+        const REDIRECT_URI = window.location.origin + window.location.pathname;
+        const SCOPES = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private playlist-read-collaborative user-library-read streaming';
+
+        let accessToken = null;
+        let currentView = 'login';
+        let menuStack = [];
+        let currentMenu = [];
+        let selectedIndex = 0;
+        let player = null;
+        let deviceId = null;
+        let currentTrack = null;
+        let isPlaying = false;
+
+        // Check for token in URL on load
+        window.addEventListener('load', () => {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const token = params.get('access_token');
+            
+            if (token) {
+                accessToken = token;
+                window.location.hash = '';
+                initializeApp();
+            }
+        });
+
+        function loginSpotify() {
+            const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
+            window.location.href = authUrl;
+        }
+
+        async function initializeApp() {
+            showLoading();
+            try {
+                await loadSpotifyPlayer();
+                await loadMainMenu();
+            } catch (error) {
+                showError('Failed to initialize: ' + error.message);
+            }
+        }
+
+        function loadSpotifyPlayer() {
+            return new Promise((resolve, reject) => {
+                if (window.Spotify) {
+                    initPlayer();
+                    resolve();
+                    return;
+                }
+
+                window.onSpotifyWebPlaybackSDKReady = () => {
+                    initPlayer();
+                    resolve();
+                };
+
+                const script = document.createElement('script');
+                script.src = 'https://sdk.scdn.co/spotify-player.js';
+                script.onerror = () => reject(new Error('Failed to load Spotify SDK'));
+                document.body.appendChild(script);
+            });
+        }
+
+        function initPlayer() {
+            player = new Spotify.Player({
+                name: 'SpotifyPod',
+                getOAuthToken: cb => { cb(accessToken); },
+                volume: 0.5
+            });
+
+            player.addListener('ready', ({ device_id }) => {
+                deviceId = device_id;
+                console.log('Ready with Device ID', device_id);
+            });
+
+            player.addListener('player_state_changed', state => {
+                if (state) {
+                    currentTrack = state.track_window.current_track;
+                    isPlaying = !state.paused;
+                    if (currentView === 'nowplaying') {
+                        showNowPlaying();
+                    }
+                }
+            });
+
+            player.connect();
+        }
+
+        async function loadMainMenu() {
+            currentMenu = [
+                { name: 'Playlists', action: 'playlists' },
+                { name: 'Albums', action: 'albums' },
+                { name: 'Now Playing', action: 'nowplaying' }
+            ];
+            selectedIndex = 0;
+            currentView = 'menu';
+            menuStack = [];
+            showMenu('Music');
+        }
+
+        function showMenu(title) {
+            const content = document.getElementById('screenContent');
+            let html = `<div class="screen-header"><span>${title}</span></div>`;
+            
+            currentMenu.forEach((item, index) => {
+                const selected = index === selectedIndex ? 'selected' : '';
+                html += `<div class="menu-item ${selected}">${item.name} ›</div>`;
+            });
+            
+            content.innerHTML = html;
+        }
+
+        async function showPlaylists() {
+            showLoading();
+            try {
+                const response = await fetch('https://api.spotify.com/v1/me/playlists?limit=20', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const data = await response.json();
+                
+                menuStack.push({ menu: currentMenu, index: selectedIndex, title: 'Music' });
+                currentMenu = data.items.map(playlist => ({
+                    name: playlist.name,
+                    action: 'playlist',
+                    id: playlist.id
+                }));
+                selectedIndex = 0;
+                currentView = 'menu';
+                showMenu('Playlists');
+            } catch (error) {
+                showError('Failed to load playlists');
+            }
+        }
+
+        async function showAlbums() {
+            showLoading();
+            try {
+                const response = await fetch('https://api.spotify.com/v1/me/albums?limit=20', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const data = await response.json();
+                
+                menuStack.push({ menu: currentMenu, index: selectedIndex, title: 'Music' });
+                currentMenu = data.items.map(item => ({
+                    name: item.album.name,
+                    action: 'album',
+                    id: item.album.id,
+                    uri: item.album.uri
+                }));
+                selectedIndex = 0;
+                currentView = 'menu';
+                showMenu('Albums');
+            } catch (error) {
+                showError('Failed to load albums');
+            }
+        }
+
+        async function showPlaylistTracks(playlistId) {
+            showLoading();
+            try {
+                const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                const data = await response.json();
+                
+                menuStack.push({ menu: currentMenu, index: selectedIndex, title: 'Playlists' });
+                currentMenu = data.items.map(item => ({
+                    name: `${item.track.name} - ${item.track.artists[0].name}`,
+                    action: 'play',
+                    uri: item.track.uri
+                }));
+                selectedIndex = 0;
+                currentView = 'menu';
+                showMenu('Tracks');
+            } catch (error) {
+                showError('Failed to load tracks');
+            }
+        }
+
+        async function playTrack(uri) {
+            if (!deviceId) {
+                showError('Player not ready');
+                return;
+            }
+            
+            try {
+                await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uris: [uri] })
+                });
+                
+                currentView = 'nowplaying';
+                setTimeout(showNowPlaying, 500);
+            } catch (error) {
+                showError('Failed to play track');
+            }
+        }
+
+        function showNowPlaying() {
+            if (!currentTrack) {
+                showError('No track playing');
+                return;
+            }
+
+            const content = document.getElementById('screenContent');
+            const albumArt = currentTrack.album.images[0]?.url || '';
+            const trackName = currentTrack.name;
+            const artistName = currentTrack.artists[0]?.name || 'Unknown';
+            
+            content.innerHTML = `
+                <div class="now-playing">
+                    <div class="album-art">
+                        ${albumArt ? `<img src="${albumArt}" alt="Album art">` : ''}
+                    </div>
+                    <div class="track-title">${trackName}</div>
+                    <div class="track-info">${artistName}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="small-text">${isPlaying ? '▶ Playing' : '⏸ Paused'}</div>
+                </div>
+            `;
+        }
+
+        function showLoading() {
+            document.getElementById('screenContent').innerHTML = '<div class="loading">Loading...</div>';
+        }
+
+        function showError(message) {
+            document.getElementById('screenContent').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        // Button handlers
+        function handleMenu() {
+            if (menuStack.length > 0) {
+                const prev = menuStack.pop();
+                currentMenu = prev.menu;
+                selectedIndex = prev.index;
+                currentView = 'menu';
+                showMenu(prev.title);
+            } else if (currentView === 'nowplaying') {
+                loadMainMenu();
+            }
+        }
+
+        function handlePrev() {
+            if (currentView === 'menu') {
+                selectedIndex = Math.max(0, selectedIndex - 1);
+                showMenu(menuStack.length > 0 ? menuStack[menuStack.length - 1].title : 'Music');
+            } else if (currentView === 'nowplaying' && player) {
+                player.previousTrack();
+            }
+        }
+
+        function handleNext() {
+            if (currentView === 'menu') {
+                selectedIndex = Math.min(currentMenu.length - 1, selectedIndex + 1);
+                showMenu(menuStack.length > 0 ? menuStack[menuStack.length - 1].title : 'Music');
+            } else if (currentView === 'nowplaying' && player) {
+                player.nextTrack();
+            }
+        }
+
+        async function handlePlay() {
+            if (currentView === 'nowplaying' && player) {
+                player.togglePlay();
+            }
+        }
+
+        async function handleSelect() {
+            if (currentView !== 'menu' || currentMenu.length === 0) return;
+            
+            const selected = currentMenu[selectedIndex];
+            
+            switch (selected.action) {
+                case 'playlists':
+                    await showPlaylists();
+                    break;
+                case 'albums':
+                    await showAlbums();
+                    break;
+                case 'playlist':
+                    await showPlaylistTracks(selected.id);
+                    break;
+                case 'album':
+                    await playTrack(selected.uri);
+                    break;
+                case 'play':
+                    await playTrack(selected.uri);
+                    break;
+                case 'nowplaying':
+                    currentView = 'nowplaying';
+                    showNowPlaying();
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
